@@ -1,71 +1,123 @@
-name: Step 2, Javascript function
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convertisseur de Devises</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Convertisseur de Devises</h1>
+        <div class="converter">
+            <label for="amount">Montant :</label>
+            <input type="number" id="amount" placeholder="Entrez un montant" />
+            
+            <label for="from-currency">De :</label>
+            <select id="from-currency">
+                <option value="EUR">EUR - Euro</option>
+                <option value="USD">USD - Dollar</option>
+                <option value="GBP">GBP - Livre</option>
+            </select>
 
-# This step triggers after push to main#skills.js.
-# This workflow updates from step 2 to step 3.
+            <label for="to-currency">À :</label>
+            <select id="to-currency">
+                <option value="USD">USD - Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="GBP">GBP - Livre</option>
+            </select>
 
-# This will run every time we push to main#skills.js.
-# Reference: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
-on:
-  workflow_dispatch:
-  push:
-    paths:
-      - "skills.js"
-    branches:
-      - main
+            <button id="convert-btn">Convertir</button>
 
-# Reference: https://docs.github.com/en/actions/security-guides/automatic-token-authentication
-permissions:
-  # Need `contents: read` to checkout the repository.
-  # Need `contents: write` to update the step metadata.
-  contents: write
+            <h2 id="result">Résultat : -</h2>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
 
-jobs:
-  # The purpose of this job is to output the current step number
-  # (retreived from the step file). This output variable can
-  # then be referenced in other jobs and used in conditional
-  # expressions.
-  get_current_step:
-    name: Check current step number
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - id: get_step
-        run: echo "current_step=$(cat ./.github/steps/-step.txt)" >> $GITHUB_OUTPUT
-    outputs:
-      current_step: ${{ steps.get_step.outputs.current_step }}
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
 
-  on_functionadded:
-    name: On Creation of a Javascript function
-    needs: get_current_step
+.container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 300px;
+}
 
-    # We will only run this action when:
-    # 1. This repository isn't the template repository.
-    # Reference: https://docs.github.com/en/actions/learn-github-actions/contexts
-    # Reference: https://docs.github.com/en/actions/learn-github-actions/expressions
-    if: ${{ !github.event.repository.is_template && needs.get_current_step.outputs.current_step == 2 }}
+h1 {
+    margin-bottom: 20px;
+    color: #333;
+}
 
-    # We'll run Ubuntu for performance instead of Mac or Windows.
-    runs-on: ubuntu-latest
+label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+}
 
-    steps:
-      # We'll need to check out the repository so that we can edit the README.
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Let's get all the branches.
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
 
-      # Verify the PR updated package.json
-      - name: Check package.json
-        uses: skills/action-check-file@v1
-        with:
-          file: "skills.js"
-          search: "function calculateNumbers"
+button {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
 
-      # In README.md, switch step 2 for step 3.
-      - name: Update to step 3
-        uses: skills/action-update-step@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          from_step: 2
-          to_step: 3
+button:hover {
+    background-color: #0056b3;
+}
+
+h2 {
+    margin-top: 20px;
+    color: #333;
+}
+
+// Fonction de conversion
+document.getElementById("convert-btn").addEventListener("click", () => {
+    const amount = parseFloat(document.getElementById("amount").value);
+    const fromCurrency = document.getElementById("from-currency").value;
+    const toCurrency = document.getElementById("to-currency").value;
+
+    if (isNaN(amount) || amount <= 0) {
+        alert("Veuillez entrer un montant valide !");
+        return;
+    }
+
+    // Taux de conversion fictifs
+    const exchangeRates = {
+        EUR: { USD: 1.1, GBP: 0.85 },
+        USD: { EUR: 0.91, GBP: 0.77 },
+        GBP: { EUR: 1.18, USD: 1.3 }
+    };
+
+    if (fromCurrency === toCurrency) {
+        document.getElementById("result").textContent = `Résultat : ${amount.toFixed(2)} ${toCurrency}`;
+        return;
+    }
+
+    const rate = exchangeRates[fromCurrency][toCurrency];
+    const convertedAmount = (amount * rate).toFixed(2);
+
+    document.getElementById("result").textContent = `Résultat : ${convertedAmount} ${toCurrency}`;
+});
